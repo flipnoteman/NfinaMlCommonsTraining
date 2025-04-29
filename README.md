@@ -1,2 +1,1 @@
 # NfinaMlCommonsTraining
-# NfinaMlCommonsTraining
