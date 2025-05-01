@@ -17,7 +17,7 @@ The process to completely implement one model, given the dataset sizes and downl
 - When using python versions >=3.9, there doesn't exist a ```tensorflow-estimator``` package that works with the gpu accelerated versions of tensorflow, therefore the script was entirely CPU driven when we followed the instructions. To fix this we made sure our docker containers were using Python 3.7.
 - Wrote a script called ```create_pd_script.sh``` that will process every part of the dataset. The given tools only allowed you to do one at a time. In addition, each process takes around 3 minutes to run, so we optimized this by using bash features to run 8 processes at once, since there aren't any conflicts between input and output for each file.
  
-#### Instructions to download dataset:
+#### Download dataset:
 
 ```bash
 # Change directory to bert root
@@ -40,8 +40,10 @@ This can take upwards of 3-4 hours even with the optimizations we included to th
 ```bash
 cd bert
 
+# Build docker container that will run the benchmark
 sudo docker build -f Dockerfile.run -t bert:run .
 
+# Run the benchmark and pass in dataset files
 sudo docker run --rm -d --gpus all \
   -v "$(pwd)/input_files:/workspace/input_files" \
   -v "$(pwd)/processed_dataset:/workspace/processed_dataset" \
@@ -56,5 +58,26 @@ sudo docker run --rm -d --gpus all \
 - The configuration files for this model expect at least one Node with 8 GPUs. Therefore all of the model hyperparameters (of which there are a lot) were made for much more profficient systems than we were working with. We were able to mostly fix this by creating a custom config file label ```training_custom_raw_images```.
 - For this model, we chose to use the raw images for training as the preproccessed images took up >800gbs. The raw images only took ~230 gbs. Not a major change, though the preprocessed dataset is said to lead to quicker training times.
 
+#### Download dataset:
+```bash
+# Change directory to bert root
+cd stable_diffusion
 
+# Build the dataset container
+sudo docker build -f Dockerfile.download -t stable_diffusion:dataset .
+
+# Make shared folders
+mkdir checkpoints datasets
+
+# Run the container in the background
+sudo docker run --rm --gpus all \
+  -v "$(pwd)/datasets:/datasets" \
+  -v "$(pwd)/checkpoints:/checkpoints" \
+  -v "$(pwd)/results:/results" \
+  stable_diffusion:dataset
+```
+
+This will likely take around 4 hours on gigabit. The final download size will be around 380 gbs.
+
+#### Run benchmarkls
 ## Single Stage Detector
