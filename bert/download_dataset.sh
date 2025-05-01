@@ -14,9 +14,10 @@ tar -xvf ./processed_dataset/results_text.tar.gz -C ./processed_dataset/
 # Create pretraining data for every part in the directory
 ./scripts/create_pd_script.sh 
 
+# Create pretraining data for evaluation data
 python3 ./bert/cleanup_scripts/create_pretraining_data.py \
-  --input_file= ./processed_dataset/eval.txt \
-  --output_file=./eval_intermediates/ \
+  --input_file=./processed_dataset/results4/eval.txt \
+  --output_file=./eval_intermediates \
   --vocab_file=input_files/vocab.txt
   --do_lower_case=True \
   --max_seq_length=512 \
@@ -25,7 +26,8 @@ python3 ./bert/cleanup_scripts/create_pretraining_data.py \
   --random_seed=12345 \
   --dupe_factor=10
 
+# Select samples from the evaluation data
 python3 ./bert/cleanup_scripts/pick_eval_samples.py \
-  --input_tfrecord=./eval_intermediates/ \
-  --output_tfrecord=. \
+  --input_tfrecord=./eval_intermediates \
+  --output_tfrecord=./eval_10k \
   --num_examples_to_pick=10000

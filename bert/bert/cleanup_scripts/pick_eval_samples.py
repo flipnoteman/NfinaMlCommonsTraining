@@ -42,21 +42,24 @@ logging.basicConfig(level=logging.INFO)
 
 def decode_record(record):
   """Decodes a record to a TensorFlow example."""
+  seq_len_a = [0] * max_seq_length
+  pred_len_a = [0] * max_predictions_per_seq
+
   name_to_features = {
       "input_ids":
-          tf.FixedLenFeature([max_seq_length], tf.int64),
+          tf.FixedLenFeature([max_seq_length], tf.int64, default_value=seq_len_a),
       "input_mask":
-          tf.FixedLenFeature([max_seq_length], tf.int64),
+          tf.FixedLenFeature([max_seq_length], tf.int64, default_value=seq_len_a),
       "segment_ids":
-          tf.FixedLenFeature([max_seq_length], tf.int64),
+          tf.FixedLenFeature([max_seq_length], tf.int64, default_value=seq_len_a),
       "masked_lm_positions":
-          tf.FixedLenFeature([max_predictions_per_seq], tf.int64),
+          tf.FixedLenFeature([max_predictions_per_seq], tf.int64, default_value=pred_len_a),
       "masked_lm_ids":
-          tf.FixedLenFeature([max_predictions_per_seq], tf.int64),
+          tf.FixedLenFeature([max_predictions_per_seq], tf.int64, default_value=pred_len_a),
       "masked_lm_weights":
-          tf.FixedLenFeature([max_predictions_per_seq], tf.float32),
+          tf.FixedLenFeature([max_predictions_per_seq], tf.float32, default_value=pred_len_a),
       "next_sentence_labels":
-          tf.FixedLenFeature([1], tf.int64),
+          tf.FixedLenFeature([1], tf.int64, default_value=[0]),
   }
 
   example = tf.parse_single_example(record, name_to_features)
