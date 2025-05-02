@@ -23,6 +23,56 @@ Each of these benchmarks were tested in a signle node with:
 
 Some hyperparameters were changed to support this configuration.
 
+For ```Bert``` and ```Stable Diffusion``` we also added logging capability for additional GPU usage statistics. For those two this code was added to the run scripts:
+
+```python
+import subprocess
+import csv
+import time
+import os
+
+def log_gpu_usage(csv_path="<output_dir>/gpu_log.csv"):
+    query = [
+        "nvidia-smi",
+        "--query-gpu=name,utilization.gpu,memory.used,memory.total,temperature.gpu,power.draw",
+        "--format=csv,noheader,nounits"
+    ]
+    result = subprocess.check_output(query, encoding="utf-8")
+    timestamp = time.time()
+    lines = result.strip().split("\n")
+
+    rows = []
+    for line in lines:
+        stats = line.strip().split(", ")
+        row = [timestamp] + stats
+        rows.append(row)
+
+    # Create file with header if it doesn't exist
+    if not os.path.exists(csv_path):
+        with open(csv_path, "w", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow([
+                "timestamp", "gpu_name", "gpu_util_percent", "mem_used_MB",
+                "mem_total_MB", "temp_C", "power_W"
+            ])
+
+    # Append new rows
+    with open(csv_path, "a", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerows(rows)
+```
+
+And then to log within training iteration loops:
+
+```python
+try:
+   log_gpu_usage()
+except:
+   print("Could not log gpu usage")
+```
+
+This code will save gpu usage statistics to a csv file located in the benchmarks dedicated output directory (```output``` for bert and ```results``` for stable_diffusion). 
+
 ### Bert
 
 #### Changes
