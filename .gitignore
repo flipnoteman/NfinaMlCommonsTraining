@@ -1,0 +1,7 @@
+bert/input_files
+bert/processed_dataset
+bert/output
+stable_diffusion/datasets
+stable_diffusion/checkpoints
+stable_diffusion/results
+**/__pycache__

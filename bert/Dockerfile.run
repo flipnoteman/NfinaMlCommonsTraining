@@ -3,6 +3,7 @@ FROM tensorflow/tensorflow:2.4.0-gpu
 
 # Check tensorflow version
 RUN python -c "import tensorflow as tf; print('Tensorflow version:', tf.__version__)"
+RUN pip install mlperf_logging
 
 ENV TF_XLA_FLAGS="--tf_xla_auto_jit=2"
 

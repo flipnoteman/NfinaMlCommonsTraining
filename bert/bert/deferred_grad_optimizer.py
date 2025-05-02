@@ -8,7 +8,7 @@ from typing import Any, List
 
 from six.moves import zip
 import tensorflow.compat.v1 as tf
-from tensorflow.python.compiler.xla.experimental import xla_sharding
+from tensorflow.compiler.xla.experimental import xla_sharding
 
 
 class GradientAggregationOptimizer(tf.train.Optimizer):

@@ -1,0 +1,24 @@
+ARG FROM_IMAGE_NAME=nvcr.io/nvidia/pytorch:24.01-py3
+FROM ${FROM_IMAGE_NAME}
+
+# apt dependencies
+RUN apt-get update
+RUN apt-get upgrade -y
+RUN apt-get install -y ffmpeg libsm6 libxext6
+
+# Remove the opencv version shipped with the base image
+# https://github.com/opencv/opencv-python/issues/884
+RUN pip uninstall -y opencv
+RUN rm -rf /usr/local/lib/python3.10/dist-packages/cv2/
+
+# install LDM
+COPY ./stable_diffusion /diffusion
+
+RUN pip install --no-cache-dir -r /diffusion/requirements.txt
+
+CMD ["/diffusion/run_and_time.sh", \
+"--num-nodes=1", \ 
+"--gpus-per-node=1" \
+"--checkpoint=/checkpoints/sd/512-base-ema.ckpt" \
+"--results-dir=/results" \
+"--config=/diffusion/configs/train_custom_raw_images.yaml"]
