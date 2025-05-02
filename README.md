@@ -59,6 +59,7 @@ Output should be placed in the output directory in the bert root directory once 
 - This model uses ```pythorch lightning``` as its ML base, this presented problems early on as it had support for both the new version of ```pytorch_lightning``` which has kind of decoupled itself from ```pytorch``` and is now just ```lightning```, however the codebase was not written to support the newer version. This caused conflicts with types and functions that changed definitions such as the ```trainer.add_parse_args()``` function used in the training code. Our first approach to fixing these problems was to manually edit the code to match the newer version of lightning. This seemed successful
 - The configuration files for this model expect at least one Node with 8 GPUs. Therefore all of the model hyperparameters (of which there are a lot) were made for much more profficient systems than we were working with. We were able to mostly fix this by creating a custom config file label ```training_custom_raw_images```.
 - For this model, we chose to use the raw images for training as the preproccessed images took up >800gbs. The raw images only took ~230 gbs. Not a major change, though the preprocessed dataset is said to lead to quicker training times.
+- ```mlperf_logging_utils``` does not exist so it is replaced by downloading the ```mlperf_logging``` library from git and installing it as a python module in the Dockerfile. The ```MLLogger``` type is used instead and an ```MLLogger``` object is created at the top of the file.
 
 #### Download dataset:
 ```bash
