@@ -71,6 +71,7 @@ mkdir checkpoints datasets
 
 # Run the container in the background
 sudo docker run --rm --gpus all \
+  --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 \
   -v "$(pwd)/datasets:/datasets" \
   -v "$(pwd)/checkpoints:/checkpoints" \
   -v "$(pwd)/results:/results" \
