@@ -33,7 +33,7 @@ sudo docker run --rm -d --gpus all \
   bert:dataset
 ```
 
-This can take upwards of 3-4 hours even with the optimizations we included to the processing script, so ``-d`` is used to have it run in the background. This does use an immense amount of resources though, so it may not be optimal to do other things while this is running.
+This docker image is around 16 gbs in size. Once run, this can take upwards of 3-4 hours even with the optimizations we included to the processing script, so ``-d`` is used to have it run in the background. This does use an immense amount of resources though, so it may not be optimal to do other things while this is running.
 
 #### Run benchmark:
 
@@ -50,6 +50,8 @@ sudo docker run --rm -d --gpus all \
   -v "$(pwd)/output:/tmp/output" \
   bert:run
 ```
+
+Output should be placed in the output directory in the bert root directory once it finishes. If you don't wish for the container to delete itself, remove the ```--rm``` from the run command. 
 
 ## Stable Diffusion
 
@@ -78,7 +80,7 @@ sudo docker run --rm -d --gpus all \
   stable_diffusion:dataset
 ```
 
-This will likely take around 4 hours on gigabit. The final download size will be around 380 gbs.
+This docker container will be around 30 gb in size. Once run, it will likely take around 4 hours on gigabit. The final download size will be around 380 gbs.
 
 #### Run benchmarks
 ```bash
@@ -95,5 +97,7 @@ sudo docker run --rm -d --gpus all \
   -v "$(pwd)/results:/results" \
   stable_diffusion:run
 ```
+
+This docker container will be around 
 
 ## Single Stage Detector
