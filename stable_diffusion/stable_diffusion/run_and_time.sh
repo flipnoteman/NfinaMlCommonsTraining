@@ -41,7 +41,8 @@ echo "STARTING TIMING RUN AT $start_fmt"
 # CLEAR YOUR CACHE HERE
 python -c "
 from mlperf_logging.mllog import constants
-from mlperf_logging_utils import mllogger
+from mlperf_logging.mllog.mllog import MLLogger
+mllogger = MLLogger()
 mllogger.event(key=constants.CACHE_CLEAR, value=True)"
 
 python main.py \
@@ -49,7 +50,7 @@ python main.py \
     lightning.trainer.devices=${GPUS_PER_NODE} \
     -m train \
     --ckpt ${CHECKPOINT} \
-    --logdir ${RESULTS_DIR}  \
+    --log-dir ${RESULTS_DIR} \
     -b ${CONFIG}
 
 # end timing

@@ -11,7 +11,7 @@ import torch
 import torchvision
 
 try:
-    import lightning.pytorch as pl
+    import lightning as pl
 except:
     import pytorch_lightning as pl
 
@@ -21,19 +21,19 @@ from omegaconf import OmegaConf
 from prefetch_generator import BackgroundGenerator
 from torch.utils.data import DataLoader, Dataset
 
-try:
-    from lightning.pytorch import seed_everything
-    from lightning.pytorch.callbacks import Callback
-    from lightning.pytorch.trainer import trainer, Trainer
-    from lightning.pytorch.utilities import rank_zero_info
-    LIGHTNING_PACK_NAME = "lightning.pytorch."
-except:
-    from pytorch_lightning import seed_everything
-    from pytorch_lightning.callbacks import Callback
-    from pytorch_lightning.trainer import trainer
-    from pytorch_lightning.utilities import rank_zero_info
-    LIGHTNING_PACK_NAME = "pytorch_lightning."
-
+#try:
+from lightning.pytorch import seed_everything
+from lightning.pytorch.callbacks import Callback
+from lightning.pytorch.trainer import Trainer as trainer
+from lightning.pytorch.utilities import rank_zero_info
+LIGHTNING_PACK_NAME = "lightning.pytorch."
+#except:
+#    from pytorch_lightning import seed_everything
+#    from pytorch_lightning.callbacks import Callback
+#    from pytorch_lightning import Trainer as trainer
+#    from pytorch_lightning.utilities import rank_zero_info
+#    LIGHTNING_PACK_NAME = "pytorch_lightning."
+#
 from ldm.data.base import Txt2ImgIterableBaseDataset
 from ldm.util import instantiate_from_config
 
@@ -189,7 +189,7 @@ def nondefault_trainer_args(opt):
     # create an argument parsser
     parser = argparse.ArgumentParser()
     # add pytorch lightning trainer default arguments
-    parser = Trainer.add_argparse_args(parent_parser=parser)
+    parser = trainer.add_argparse_args(parent_parser=parser)
     # parse the empty arguments to obtain the default values
     args = parser.parse_args([])
     # return all non-default arguments
@@ -393,7 +393,7 @@ if __name__ == "__main__":
     sys.path.append(os.getcwd())
 
     p_parser = get_parser()
-    parser = Trainer.add_argparse_args(parent_parser=p_parser)
+    parser = trainer.add_argparse_args(parent_parser=p_parser)
 
     opt, unknown = parser.parse_known_args()
     # Veirfy the arguments are both specified
@@ -604,7 +604,7 @@ if __name__ == "__main__":
         trainer_kwargs["callbacks"].append(instantiate_from_config(modelckpt_cfg))
 
         # Create a Trainer object with the specified command-line arguments and keyword arguments, and set the log directory
-        trainer = Trainer.from_argparse_args(trainer_opt, **trainer_kwargs)
+        trainer = trainer.from_argparse_args(trainer_opt, **trainer_kwargs)
         trainer.logdir = logdir
 
         # Create a data module based on the configuration file
@@ -703,7 +703,7 @@ if __name__ == "__main__":
             dst = os.path.join(dst, "debug_runs", name)
             os.makedirs(os.path.split(dst)[0], exist_ok=True)
             os.rename(logdir, dst)
-        if Trainer.global_rank == 0:
+        if trainer.global_rank == 0:
             print(trainer.profiler.summary())
 
         mllogger.event(mllog_constants.STATUS, value=status)

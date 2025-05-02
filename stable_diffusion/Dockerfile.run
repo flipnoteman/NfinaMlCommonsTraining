@@ -12,13 +12,18 @@ RUN pip uninstall -y opencv
 RUN rm -rf /usr/local/lib/python3.10/dist-packages/cv2/
 
 # install LDM
-COPY ./stable_diffusion /diffusion
+COPY stable_diffusion/ /diffusion/
+COPY scripts/run_benchmark.sh /diffusion/run_benchmark.sh
 
 RUN pip install --no-cache-dir -r /diffusion/requirements.txt
+RUN pip install pytorch_lightning
+RUN pip install httpx==0.24.1
 
-CMD ["/diffusion/run_and_time.sh", \
-"--num-nodes=1", \ 
-"--gpus-per-node=1" \
-"--checkpoint=/checkpoints/sd/512-base-ema.ckpt" \
-"--results-dir=/results" \
-"--config=/diffusion/configs/train_custom_raw_images.yaml"]
+RUN git clone https://github.com/mlperf/logging.git mlperf-logging && pip install -e mlperf-logging
+
+RUN cd /diffusion
+
+WORKDIR /diffusion
+
+RUN chmod +x run_benchmark.sh
+CMD ["./run_benchmark.sh"]

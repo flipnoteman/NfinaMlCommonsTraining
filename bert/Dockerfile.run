@@ -12,26 +12,9 @@ WORKDIR /workspace
 # Copy everything from your current directory into /workspace
 COPY bert/ /workspace/bert/
 COPY eval_10k /workspace/eval_10k
+COPY scripts/run_benchmark.sh /workspace/run_benchmark.sh
+
+RUN chmod +x ./run_benchmark.sh
 
 # Default command: execute the dataset download script
-CMD ["python", "./bert/run_pretraining.py",\
-  "--bert_config_file=./input_files/bert_config.json", \
-  "--output_dir=/tmp/output/", \
-  "--input_file=./eval_10k", \
-  "--do_eval", \
-  "--nodo_train", \
-  "--eval_batch_size=8", \
-  "--init_checkpoint=./input_files/tf2_ckpt/model.ckpt-28252", \
-  "--iterations_per_loop=1000", \
-  "--learning_rate=0.001", \
-  "--max_eval_steps=125", \
-  "--max_predictions_per_seq=76", \
-  "--max_seq_length=512", \
-  "--num_gpus=1", \
-  "--num_train_steps=107538", \
-  "--num_warmup_steps=1562", \
-  "--optimizer=lamb", \
-  "--save_checkpoints_steps=1562", \
-  "--start_warmup_step=0", \
-  "--train_batch_size=24", \
-  "--nouse_tpu"]
+CMD ["./run_benchmark.sh"]
