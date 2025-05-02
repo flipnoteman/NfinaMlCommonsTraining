@@ -80,5 +80,20 @@ sudo docker run --rm --gpus all \
 
 This will likely take around 4 hours on gigabit. The final download size will be around 380 gbs.
 
-#### Run benchmarkls
+#### Run benchmarks
+```bash
+# Change directory to bert root
+cd stable_diffusion
+
+# Build the dataset container
+sudo docker build -f Dockerfile.run -t stable_diffusion:run .
+
+# Run the container in the background
+sudo docker run --rm --gpus all \
+  -v "$(pwd)/datasets:/datasets" \
+  -v "$(pwd)/checkpoints:/checkpoints" \
+  -v "$(pwd)/results:/results" \
+  stable_diffusion:run
+```
+
 ## Single Stage Detector
