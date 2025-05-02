@@ -1,7 +1,11 @@
 bert/input_files
 bert/processed_dataset
+bert/bert/eval_10k
+bert/bert/eval_intermediates
 bert/output
 stable_diffusion/datasets
 stable_diffusion/checkpoints
 stable_diffusion/results
+single_stage_detector/dataset
+single_stage_detector/output
 **/__pycache__

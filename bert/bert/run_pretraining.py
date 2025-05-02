@@ -12,11 +12,46 @@ import optimization
 import mlp_logging as mllog
 from mlperf_logging.mllog import constants as mllog_constants
 
+import subprocess
+import csv
+import time
+
 import tensorflow.compat.v1 as tf
 # from tensorflow.contrib import cluster_resolver as contrib_cluster_resolver
 # from tensorflow.contrib import data as contrib_data
 # from tensorflow.contrib import tpu as contrib_tpu
 import distribution_utils
+
+# Log gpu usage when called
+def log_gpu_usage(csv_path="/output/gpu_log.csv"):
+    query = [
+        "nvidia-smi",
+        "--query-gpu=name,utilization.gpu,memory.used,memory.total,temperature.gpu,power.draw",
+        "--format=csv,noheader,nounits"
+    ]
+    result = subprocess.check_output(query, encoding="utf-8")
+    timestamp = time.time()
+    lines = result.strip().split("\n")
+
+    rows = []
+    for line in lines:
+        stats = line.strip().split(", ")
+        row = [timestamp] + stats
+        rows.append(row)
+
+    # Create file with header if it doesn't exist
+    if not os.path.exists(csv_path):
+        with open(csv_path, "w", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow([
+                "timestamp", "gpu_name", "gpu_util_percent", "mem_used_MB",
+                "mem_total_MB", "temp_C", "power_W"
+            ])
+
+    # Append new rows
+    with open(csv_path, "a", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerows(rows)
 
 flags = absl.flags
 
@@ -391,6 +426,7 @@ def input_fn_builder(input_files,
     # For training, we want a lot of parallel reading and shuffling.
     # For eval, we want no shuffling and parallel reading doesn't matter.
     if is_training:
+
       d = tf.data.Dataset.from_tensor_slices(tf.constant(input_files))
       if input_context:
         tf.logging.info(
@@ -615,7 +651,13 @@ def main(_):
         num_cpu_threads=8,
         num_eval_steps=FLAGS.max_eval_steps)
 
-    while True:
+    while True: 
+      # Attempt to log GPU usage
+      try:
+         log_gpu_usage()
+      except:
+         print("Could not log usage")
+
       mllog.mllog_start(key=mllog_constants.EVAL_START)
       if FLAGS.use_tpu:
         result = estimator.evaluate(

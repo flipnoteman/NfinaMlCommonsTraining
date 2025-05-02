@@ -5,6 +5,8 @@ import os
 import sys
 import time
 import random
+import csv
+import subprocess
 
 import numpy as np
 import torch
@@ -41,6 +43,36 @@ import mlperf_logging_utils
 import mlperf_logging.mllog.constants as mllog_constants
 from mlperf_logging_utils import mllogger
 
+# Log gpu usage to csv file
+def log_gpu_usage(csv_path="/results/gpu_log.csv"):
+    query = [
+        "nvidia-smi",
+        "--query-gpu=name,utilization.gpu,memory.used,memory.total,temperature.gpu,power.draw",
+        "--format=csv,noheader,nounits"
+    ]
+    result = subprocess.check_output(query, encoding="utf-8")
+    timestamp = time.time()
+    lines = result.strip().split("\n")
+
+    rows = []
+    for line in lines:
+        stats = line.strip().split(", ")
+        row = [timestamp] + stats
+        rows.append(row)
+
+    # Create file with header if it doesn't exist
+    if not os.path.exists(csv_path):
+        with open(csv_path, "w", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow([
+                "timestamp", "gpu_name", "gpu_util_percent", "mem_used_MB",
+                "mem_total_MB", "temp_C", "power_W"
+            ])
+
+    # Append new rows
+    with open(csv_path, "a", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerows(rows)
 
 def get_parser():
     # A function to create an ArgumentParser object and add arguments to it
@@ -667,12 +699,22 @@ if __name__ == "__main__":
 
         # Run the training and validation
         if opt.mode=="train":
+            try: 
+                log_gpu_usage()
+            except:
+                print("Could not log gpu usage")
+
             try:
                 trainer.fit(model, data)
             except Exception:
                 melk()
                 raise
         elif opt.mode=="validate":
+            try: 
+                log_gpu_usage()
+            except:
+                print("Could not log gpu usage")
+
             trainer.validate(model, data)
         else:
             raise ValueError(f"Unknown mode {opt.mode}")
@@ -705,5 +747,10 @@ if __name__ == "__main__":
             os.rename(logdir, dst)
         if trainer.global_rank == 0:
             print(trainer.profiler.summary())
+
+        try: 
+            log_gpu_usage()
+        except:
+            print("Could not log gpu usage")
 
         mllogger.event(mllog_constants.STATUS, value=status)
