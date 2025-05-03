@@ -4,7 +4,7 @@
 We started implementing these models and quickly realized that broken dependencies and missing resources would be a common theme among all of the mlcommons benchmarks. Additionally, all of the models are meant for industry-grade AI-compute resources, which meant some deeper level of understanding how these incredibly complex machine learning models functioned would be required to make the models run on lower end industry hardware. With that said, we began attempting to work through the models by:
 - Following the instructions for the benchmark. This often didn't go smoothly on first pass with the previously mentioned constraints.
 - When we hit a version problem with python packges (which happened often), we attempted to modify the code/scripts causing the problems, OR install older versions of python modules when available that complied with the current implemenation. This sometimes led to further issues when the required version of a module only exists with an older python version. Since every one of these benchmark was tested or made with different versions of everything, this became a large, non-sustainable and non-scalable, task. These problems persisted through every step of the process, even when work was being done inside the premade docker containers that came with becnhmarks like stable diffusion and single stage detector.
-- FInally, once every script was updated and made to work, we created separate dockerfiles for downloading the dataset and running the benchmark. This, along with updated requirements.txt files ensured that these benchmarks could be successfully executed in the future. It also improves the consistency of setup and run between benchmarks. 
+- Finally, once every script was updated and made to work, we created separate dockerfiles for downloading the dataset and running the benchmark. This, along with updated requirements.txt files ensured that these benchmarks could be successfully executed in the future. It also improves the consistency of setup and run between benchmarks. 
 
 The process to completely implement one model, given the dataset sizes and download times/run times, would net ~3 weeks of work. 
 
@@ -23,7 +23,7 @@ Each of these benchmarks were tested in a signle node with:
 
 Some hyperparameters were changed to support this configuration.
 
-For ```Bert``` and ```Stable Diffusion``` we also added logging capability for additional GPU usage statistics. For those two this code was added to the run scripts:
+We also added logging capability for additional GPU usage statistics. To accomplish this, this code was added to the each benchmarks run script:
 
 ```python
 import subprocess
@@ -71,7 +71,7 @@ except:
    print("Could not log gpu usage")
 ```
 
-This code will save gpu usage statistics to a csv file located in the benchmarks dedicated output directory (```output``` for bert and ```results``` for stable_diffusion). 
+This code will save gpu usage statistics to a csv file located in the benchmarks dedicated output directory (```output``` for bert and ```results``` for stable_diffusion and single stage detector). 
 
 ### Bert
 
@@ -175,7 +175,11 @@ This docker container will be around
 ### Single Stage Detector
 
 #### Changes
-- If downloading the dataset outside a container, there seems to be a problem with the ```fiftyone``` library. You must install the newest version and switch ```name=``` to ```name_or_url=``` in the ```fiftyone_dataset.sh``` file. 
+- If downloading the dataset outside a container, there seems to be a problem with the ```fiftyone``` library. You must install the newest version and switch ```name=``` to ```name_or_url=``` in the ```fiftyone_dataset.sh``` file.
+- All of the original config files (named ```config_<DGX ID>_<num_nodes>x<num_gpus>x<batch_size>.sh```) are configured for the NVIDIA DGX system and require at least 8 GPUs and one node. Therefore we had to create a custom configuration files in the benchmark root directory called ```config_RTX6000_001x01x008.sh``` that configures the benchmark for 1 node with 1 GPU and a batch size of 8, and also doesn't enable the DGX configurations.
+- This machine with this dataset seemed to have an issue with multiprocessing in this benchmark, therefore in the config file we set the number of workers to 0 so that there was no multiprocessing for the data, this increases training times but solves this error when running the benchmark.
+- Added the gpu logging code to the ```train.py```, which is the file that dictates the training, to log once every epoch.
+- The config file is sourced in the ```run_benchmark.sh``` script in the ```/script``` folder. If you wish to create a custom configuration file, you may do so just make sure that it is copied into the image from ```Dockerfile.run``` and sourced in the ```run_benchmark.sh``` script. 
 
 #### Download dataset
 ```bash
@@ -192,6 +196,8 @@ sudo mkdir dataset
 sudo docker run --rm -d --gpus all -v "$(pwd)/dataset:/dataset" single_stage:dataset
 ```
 
+This image is around 16gb once built, and the dataset is around 400gb. This download takes a very long time, around 6-7 hours, as part of that time is splitting the dataset based on label. Once finished, everything is placed into ```./dataset```.
+
 #### Run benchmark
 ```bash
 # Change directory to single_stage_detector root
@@ -206,3 +212,6 @@ sudo mkdir output
 # Run container to run benchmark
 sudo docker run --rm -d --gpus all -v "$(pwd)/dataset:/dataset" -v "$(pwd)/output:/output" single_stage:run
 ```
+
+This model, once running, will take an estimated 16 hours to complete training and a few more hours for validation. It also takes up a lot of resources it is therefore our suggestion that you run this one by itself, as the system will lock up and crash if all of the resources are taken up.
+
