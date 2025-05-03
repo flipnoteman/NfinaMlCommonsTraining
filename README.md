@@ -76,7 +76,7 @@ This code will save gpu usage statistics to a csv file located in the benchmarks
 ### Bert
 
 #### Changes
-- If you want to build the dataset from scratch as we did, you would need to edit the download scripts as the original dataset that was used no longer exists on wikipedias archive. They only support the enlish dataset from 2017 on and this benchmark was originally made for the 2015 dataset. We decided to use the premade dataset instead because of this.
+- If you want to build the dataset from scratch as we did, you would need to edit the download scripts as the original dataset that was used no longer exists on wikipedias archive. They only archived the english dataset from 2017-onwards and this benchmark was originally made for the 2015 dataset. We decided to use the premade dataset instead because of this.
 - There was an issue with ```FixedLengthFeature``` in the ```preprocess_dataset.py``` script. We included default values for all of those parameters and that seems to have fixed the issue.
 - Created both dockerfiles from scratch in order to make sure that things will install correclty and run as intended. This was the only benchmark we implemented that didnt already have some dockerfile to work inside of.
 - When using python versions >=3.9, there doesn't exist a ```tensorflow-estimator``` package that works with the gpu accelerated versions of tensorflow, therefore the script was entirely CPU driven when we followed the instructions. To fix this we made sure our docker containers were using Python 3.7.
