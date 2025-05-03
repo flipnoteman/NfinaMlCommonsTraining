@@ -24,21 +24,18 @@ RUN apt-get update \
         git libcurl4 wget \
  && rm -rf /var/lib/apt/lists/*
 
-# Install python dependencies
 COPY ./single_stage_detector/requirements.txt /
-# Cython needs to be present before attempting to install pycocotools
 RUN pip install --no-cache-dir Cython
 RUN pip install --no-cache-dir -r /requirements.txt
 
 # Copy code
 COPY single_stage_detector/ /workspace/single_stage_detector/
-COPY scripts/download_dataset.sh /workspace/single_stage_detector/ssd/
+COPY scripts/run_benchmark.sh /workspace/single_stage_detector/ssd/
+COPY config_RTX6000_001x01x008.sh /workspace/single_stage_detector/ssd/
 
 # Set working directory
 WORKDIR /workspace/single_stage_detector/ssd
 
-RUN chmod +x download_dataset.sh
+RUN chmod +x run_benchmark.sh
 
-RUN
-
-CMD ["./download_dataset.sh"]
+CMD ["./run_benchmark.sh"]

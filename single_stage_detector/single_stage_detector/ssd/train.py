@@ -3,6 +3,8 @@ import time
 import random
 import argparse
 import datetime
+import subprocess
+import csv
 
 import numpy as np
 import torch
@@ -22,7 +24,36 @@ from coco_utils import get_coco, get_openimages
 from engine import train_one_epoch, evaluate
 from model.retinanet import retinanet_from_backbone
 
+# Log gpu usage
+def log_gpu_usage(csv_path="/output/gpu_log.csv"):
+    query = [
+        "nvidia-smi",
+        "--query-gpu=name,utilization.gpu,memory.used,memory.total,temperature.gpu,power.draw",
+        "--format=csv,noheader,nounits"
+    ]
+    result = subprocess.check_output(query, encoding="utf-8")
+    timestamp = time.time()
+    lines = result.strip().split("\n")
 
+    rows = []
+    for line in lines:
+        stats = line.strip().split(", ")
+        row = [timestamp] + stats
+        rows.append(row)
+
+    # Create file with header if it doesn't exist
+    if not os.path.exists(csv_path):
+        with open(csv_path, "w", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow([
+                "timestamp", "gpu_name", "gpu_util_percent", "mem_used_MB",
+                "mem_total_MB", "temp_C", "power_W"
+            ])
+
+    # Append new rows
+    with open(csv_path, "a", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerows(rows)
 
 def get_dataset_fn(name):
     paths = {
@@ -230,6 +261,11 @@ def main(args):
             status = SUCCESS
     else:
         for epoch in range(args.start_epoch, args.epochs):
+            try:
+                log_gpu_usage()
+            except:
+                print("Could not log gpu usage")
+
             if args.distributed:
                 train_sampler.set_epoch(epoch)
             train_one_epoch(model, optimizer, scaler, data_loader, device, epoch, args)
