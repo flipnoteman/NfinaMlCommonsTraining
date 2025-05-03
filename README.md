@@ -170,7 +170,7 @@ sudo docker run --rm -d --gpus all \
   stable_diffusion:run
 ```
 
-This docker container will be around 
+Occasionally, this model will fail after validation completes. This failure is not-descript as the only indication of failure is the system locking up and then eventually killing the process. If this happens, document your findings, and make a github issue as we were not able to diagnose this. If it were to run to completion it would take around 8 hours for training and validation with the configurations we made.
 
 ### Single Stage Detector
 
