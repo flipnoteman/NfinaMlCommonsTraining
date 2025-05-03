@@ -3,4 +3,4 @@
 export BATCHSIZE=8
 export NUMEPOCHS=${NUMEPOCHS:-8}
 export DATASET_DIR="/dataset"
-export EXTRA_PARAMS='--lr 0.001 --output-dir=/results'
+export EXTRA_PARAMS='--lr 0.001 -j 0  --output-dir=/results'
